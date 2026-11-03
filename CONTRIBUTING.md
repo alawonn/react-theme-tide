@@ -48,4 +48,4 @@ To save frames, a video and frame timing from the demo page, run `TIDE_EVIDENCE=
 
 Work on a `feature/...` or `fix/...` branch from `develop` and open a pull request against `develop`. Use Conventional Commit messages, such as `fix(tide): finish on resize`.
 
-Versions follow SemVer. Development builds use `0.1.0-alpha.N` prereleases. Keep `package.json` and `package-lock.json` versions in step.
+Versions follow SemVer. Development builds on `develop` are prereleases of the next version, such as `0.2.0-alpha.1`. Keep `package.json` and `package-lock.json` versions in step.

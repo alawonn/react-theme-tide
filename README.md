@@ -6,7 +6,7 @@ What shows under the water is your real page in its new theme: text, backgrounds
 
 React Theme Tide doesn't store your theme. You keep your own theme state and storage, and the library animates around the function that applies it.
 
-> Status: early development (`0.1.0-alpha`). It isn't published to npm yet, and the API may change.
+> Status: first release (0.1). The API may still change before 1.0.
 
 ## Install
 

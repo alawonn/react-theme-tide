@@ -9,6 +9,10 @@
     "type": "git",
     "url": "git+https://github.com/alawonn/react-theme-tide.git"
   },
+  "homepage": "https://github.com/alawonn/react-theme-tide#readme",
+  "bugs": {
+    "url": "https://github.com/alawonn/react-theme-tide/issues"
+  },
   "keywords": [
     "react",
     "theme",
