@@ -10,8 +10,10 @@ React Theme Tide doesn't store your theme. You keep your own theme state and sto
 
 ## Install
 
+It isn't on npm yet. Install the package file from the GitHub release:
+
 ```bash
-npm install react-theme-tide
+npm install https://github.com/alawonn/react-theme-tide/releases/download/v0.1.0/react-theme-tide-0.1.0.tgz
 ```
 
 React 18 or newer is a peer dependency. There's no stylesheet to import. While a tide runs, the library adds a small `<style>` element to `<head>` and removes it when the tide ends.
