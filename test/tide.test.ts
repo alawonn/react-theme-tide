@@ -160,11 +160,29 @@ describe("themeTide", () => {
     expect(commit).toHaveBeenCalledTimes(1);
   });
 
-  it("finishes early when the page scrolls or resizes", async () => {
+  it("rushes the water to the top when the page scrolls", async () => {
     const fake = installFakeViewTransitions();
     const done = themeTide(vi.fn());
     await flush();
     window.dispatchEvent(new Event("scroll"));
+    window.dispatchEvent(new Event("scroll"));
+    expect(fake.animations).toHaveLength(2);
+    expect(fake.animations[0]?.playState).toBe("idle");
+    expect(fake.animations[1]?.options.duration).toBe(200);
+    expect(fake.transitions[0]?.skipped).toBe(false);
+    fake.transitions[0]?.finish();
+    await expect(done).resolves.toEqual({
+      animated: false,
+      reason: "interrupted",
+    });
+    expect(leftovers()).toEqual(clean);
+  });
+
+  it("ends the tide right away when the window resizes", async () => {
+    const fake = installFakeViewTransitions();
+    const done = themeTide(vi.fn());
+    await flush();
+    window.dispatchEvent(new Event("resize"));
     await expect(done).resolves.toEqual({
       animated: false,
       reason: "interrupted",
