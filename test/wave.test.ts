@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolveThemeTideOptions, themeTideDefaults } from "../src/options.js";
-import { maskKeyframes, waterlineAt, wavePhaseAt } from "../src/wave.js";
+import { maskKeyframes, rushKeyframes, waterlineAt, wavePhaseAt } from "../src/wave.js";
 
 const options = resolveThemeTideOptions();
 const height = 800;
@@ -96,5 +96,19 @@ describe("mask keyframes", () => {
       // The tile's fill ends 2 px above its bottom edge.
       expect(p.bodyY).toBeLessThan(p.y + 26);
     }
+  });
+});
+
+describe("rush keyframes", () => {
+  const frames = rushKeyframes(options, { width: 1200, height }, 1400, 200).map(positions);
+
+  it("starts where the water is and ends with the page covered", () => {
+    expect(frames[0]!.y).toBeCloseTo(waterlineAt(1400, options, height) - 14, 1);
+    expect(frames.at(-1)!.y + 28).toBeLessThanOrEqual(0);
+    expect(frames.at(-1)!.bodyY).toBeLessThanOrEqual(0);
+  });
+
+  it("keeps the waves at their normal speed", () => {
+    expect(frames.at(-1)!.x - frames[0]!.x).toBeCloseTo(240 * 0.2, 1);
   });
 });
