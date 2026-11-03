@@ -96,13 +96,18 @@ function maskPosition(
   options: ResolvedThemeTideOptions,
   viewport: Viewport,
 ): string {
-  const line = waterlineAt(time, options, viewport.height);
-  const a = options.waveAmplitude;
-  const x = wavePhaseAt(time, options);
+  return positionFor(
+    waterlineAt(time, options, viewport.height),
+    wavePhaseAt(time, options),
+    options.waveAmplitude,
+  );
+}
+
+function positionFor(line: number, phase: number, amplitude: number): string {
   // The solid layer starts one pixel above the bottom of the tile's filled
   // area and spills one pixel past each side, so no seam shows at fractional
   // device pixels.
-  return `${round(x)}px ${round(line - a - tilePadding)}px, -1px ${round(line + a - 1)}px`;
+  return `${round(phase)}px ${round(line - amplitude - tilePadding)}px, -1px ${round(line + amplitude - 1)}px`;
 }
 
 /** Static mask properties. The starting position hides the whole new page. */
@@ -139,6 +144,32 @@ export function maskKeyframes(
       offset: duration === 0 ? 0 : time / duration,
       maskPosition: maskPosition(time, options, viewport),
     }));
+}
+
+/**
+ * Keyframes that take the water from where it is at `from` ms to the end of
+ * the tide in `duration` ms. The waves keep their normal speed.
+ */
+export function rushKeyframes(
+  options: ResolvedThemeTideOptions,
+  viewport: Viewport,
+  from: number,
+  duration: number,
+): Keyframe[] {
+  const start = waterlineAt(from, options, viewport.height);
+  const end = waterlineAt(totalDuration(options), options, viewport.height);
+  const steps = Math.max(1, Math.ceil((duration / 1000) * sampleRate));
+  return Array.from({ length: steps + 1 }, (_, i) => {
+    const t = i / steps;
+    return {
+      offset: t,
+      maskPosition: positionFor(
+        start + (end - start) * easeInOut(t),
+        wavePhaseAt(from + t * duration, options),
+        options.waveAmplitude,
+      ),
+    };
+  });
 }
 
 function round(value: number): number {

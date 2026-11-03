@@ -4,7 +4,12 @@ import {
   type ResolvedThemeTideOptions,
   type ThemeTideOptions,
 } from "./options.js";
-import { maskDeclarations, maskKeyframes, type Viewport } from "./wave.js";
+import {
+  maskDeclarations,
+  maskKeyframes,
+  rushKeyframes,
+  type Viewport,
+} from "./wave.js";
 
 /** Applies the new theme to the DOM. Called exactly once per themeTide call. */
 export type ThemeTideCommit = () => void | Promise<void>;
@@ -23,6 +28,8 @@ export type ThemeTideResult =
 
 const attribute = "data-theme-tide";
 const pseudo = "::view-transition-new(root)";
+/** How long the water takes to reach the top after a scroll or pointer press. */
+const rushDuration = 200;
 
 interface Active {
   transition: ViewTransition;
@@ -173,27 +180,44 @@ async function animate(
   setActive({ transition });
 
   let animation: Animation | undefined;
+  let viewport = viewportSize();
   let interrupted = false;
   const interrupt = () => {
     interrupted = true;
     transition.skipTransition();
   };
+  // The old page is a still snapshot, so it can't scroll. On a scroll or a
+  // pointer press the water rushes to the top in rushDuration instead.
+  // Chromium sends pointer events to the root element during a transition,
+  // so controls can't receive them until the tide ends.
+  const rush = () => {
+    if (interrupted || !animation) return;
+    const from = Number(animation.currentTime ?? 0);
+    if (totalDuration(options) - from <= rushDuration) return;
+    interrupted = true;
+    const next = root.animate(rushKeyframes(options, viewport, from, rushDuration), {
+      duration: rushDuration,
+      easing: "linear",
+      fill: "forwards",
+      pseudoElement: pseudo,
+    });
+    animation.cancel();
+    animation = next;
+  };
 
   const ready = transition.ready.then(
     () => {
-      const viewport = snapshotSize(viewportSize());
+      viewport = snapshotSize(viewport);
       animation = root.animate(maskKeyframes(options, viewport), {
         duration: totalDuration(options),
         easing: "linear",
         fill: "forwards",
         pseudoElement: pseudo,
       });
-      // Scrolling or resizing would show a frozen snapshot, so finish instead.
-      // A pointer press finishes it too: Chromium sends pointer events to the
-      // root element during a transition, so controls can't receive them.
-      window.addEventListener("scroll", interrupt, { passive: true });
+      window.addEventListener("scroll", rush, { passive: true });
+      window.addEventListener("pointerdown", rush, { capture: true });
+      // A resize changes the snapshot's size, so end the tide right away.
       window.addEventListener("resize", interrupt);
-      window.addEventListener("pointerdown", interrupt, { capture: true });
     },
     () => undefined,
   );
@@ -211,9 +235,9 @@ async function animate(
   if (!failure) await run().catch((error: unknown) => (failure = { error }));
 
   const completed = !interrupted && animation?.playState === "finished";
-  window.removeEventListener("scroll", interrupt);
+  window.removeEventListener("scroll", rush);
+  window.removeEventListener("pointerdown", rush, { capture: true });
   window.removeEventListener("resize", interrupt);
-  window.removeEventListener("pointerdown", interrupt, { capture: true });
   animation?.cancel();
   style.remove();
   root.removeAttribute(attribute);
