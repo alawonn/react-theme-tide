@@ -10,8 +10,10 @@ React Theme Tide doesn't store your theme. You keep your own theme state and sto
 
 ## Install
 
+It isn't on npm yet. Install the package file from the GitHub release:
+
 ```bash
-npm install react-theme-tide
+npm install https://github.com/alawonn/react-theme-tide/releases/download/v0.2.0/react-theme-tide-0.2.0.tgz
 ```
 
 React 18 or newer is a peer dependency. There's no stylesheet to import. While a tide runs, the library adds a small `<style>` element to `<head>` and removes it when the tide ends.
@@ -147,8 +149,9 @@ A value outside its range, or of the wrong type, makes the call reject with a `R
 - **Completion.** At the end, the troughs pass above the top edge and the fill reaches past both sides, so none of the old theme is left showing.
 - **Your commit runs once.** Every call runs your function exactly once, whether the tide animates, falls back, finishes early or fails.
 - **Another change during a tide.** The running tide jumps to its end, then the new theme applies instantly. Changes always apply in the order they were made.
-- **Scrolling or resizing during a tide.** The tide finishes right away. Otherwise you'd be looking at a still snapshot of the page.
-- **Input.** Keyboard input reaches the focused control during a tide. A mouse or touch press finishes the tide right away. In Firefox the press also reaches the control under it. In Chromium it doesn't, because the browser sends pointer events to the root element during any View Transition, so the next press works as usual.
+- **Scrolling during a tide.** The water rushes to the top in about 0.2 s, with the waves still moving, and the page ends up where you scrolled. The old theme is a still snapshot, so it can't scroll along with the page.
+- **Resizing during a tide.** The tide ends right away, because the snapshot no longer fits the window.
+- **Input.** Keyboard input reaches the focused control during a tide. A mouse or touch press makes the water rush to the top, the same as scrolling. In Firefox the press also reaches the control under it. In Chromium it doesn't, because the browser sends pointer events to the root element during any View Transition, so the next press works as usual.
 - **Instant fallback.** The theme changes with no animation when the browser lacks View Transitions or CSS masks, when reduced motion applies, when the tab is hidden, when every duration is `0`, or when another View Transition is already running (in browsers that report `document.activeViewTransition`).
 - **Errors.** If your function throws or rejects, the returned promise rejects with that error. The animation and its temporary style are removed either way.
 - **Unmounting.** Unmounting a component that started a tide doesn't stop the tide. Nothing stays behind once it ends.

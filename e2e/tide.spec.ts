@@ -236,15 +236,36 @@ test("a click during the hold finishes the tide", async ({ page }) => {
   expect(await leftovers(page)).toEqual(clean);
 });
 
-test("scrolling during a tide finishes it", async ({ page }) => {
+test("scrolling during a tide rushes the water to the top", async ({ page, browserName }) => {
   await open(page);
-  const result = await page.evaluate(async () => {
+  const level = page.viewportSize()!.height * 0.4;
+  const run = await page.evaluate(async () => {
     const done = window.toggleTheme();
-    await new Promise((r) => setTimeout(r, 400));
+    await new Promise((r) => setTimeout(r, 1300));
+    const start = performance.now();
     window.scrollBy(0, 300);
-    return done;
+    const lines: number[] = [];
+    let finished = false;
+    void done.then(() => (finished = true));
+    while (!finished) {
+      const p = getComputedStyle(document.documentElement, "::view-transition-new(root)").maskPosition;
+      const y = parseFloat(p.split(",")[0]!.trim().split(/\s+/)[1]!);
+      if (!Number.isNaN(y)) lines.push(y + 14);
+      await new Promise(requestAnimationFrame);
+    }
+    return { result: await done, elapsed: performance.now() - start, lines, scrollY: scrollY };
   });
-  expect(result).toEqual({ animated: false, reason: "interrupted" });
+  expect(run.result).toEqual({ animated: false, reason: "interrupted" });
+  // The water keeps animating: it leaves the hold level and rises past the top.
+  expect(run.elapsed).toBeGreaterThan(150);
+  expect(run.elapsed).toBeLessThan(500);
+  expect(run.lines[0]).toBeCloseTo(level, 0);
+  expect(run.lines.some((y) => y > 0 && y < level - 20)).toBe(true);
+  expect(Math.min(...run.lines)).toBeLessThan(0);
+  expect(run.scrollY).toBe(300);
+  if (browserName === "chromium") {
+    expect(await allPixels(page, isDark, button)).toEqual([]);
+  }
   expect(await leftovers(page)).toEqual(clean);
 });
 
