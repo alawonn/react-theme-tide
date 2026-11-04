@@ -1,6 +1,6 @@
 {
   "name": "react-theme-tide",
-  "version": "0.2.4",
+  "version": "0.2.5-alpha.1",
   "description": "Theme changes that rise up the page like water, using native View Transitions.",
   "license": "MIT",
   "type": "module",
