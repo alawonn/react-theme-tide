@@ -87,7 +87,11 @@ export function App() {
           <p className="eyebrow">Theme transitions for React</p>
           <p className="byline">
             <a href="https://alawonn.com">
-              an <span className="wordmark" role="img" aria-label="alawonn" /> project
+              an{" "}
+              <span className="wordmark" role="img" aria-label="alawonn">
+                <span aria-hidden="true">alawonn</span>
+              </span>{" "}
+              project
             </a>
           </p>
           <h1>Change themes with a rising tide.</h1>
