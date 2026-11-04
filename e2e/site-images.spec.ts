@@ -4,7 +4,8 @@ import { pseudo } from "./helpers.js";
 
 // Saves one screenshot per site in the README's "Sites using it" table into
 // docs/images, paused in the middle of each site's own hold. The browser
-// prefers light; `button` switches away from the theme the site starts in.
+// prefers light; `button` (an aria-label, or the visible text) switches away
+// from the theme the site starts in.
 // It loads the live sites, so it needs a network connection. Run with
 // TIDE_SITE_IMAGES=1 --project=chromium; it asserts nothing.
 test.skip(process.env.TIDE_SITE_IMAGES !== "1", "README site image run only");
@@ -14,6 +15,7 @@ const sites = [
   { file: "site-vertexx", url: "https://vertexx.fit/", button: "Light appearance", pause: 1400 },
   { file: "site-meau-me", url: "https://rameau.me/", button: "Dark", pause: 1700 },
   { file: "site-alawonn", url: "https://alawonn.com/", button: "Dark", pause: 1200 },
+  { file: "site-alawonn-font", url: "https://alawonn.github.io/alawonn-font/", button: "Dark", pause: 1450 },
 ];
 
 const out = (name: string) =>
@@ -29,7 +31,10 @@ for (const site of sites) {
     await page.evaluate(
       async ([label, pseudo]) => {
         const button = [...document.querySelectorAll("button")].find(
-          (b) => b.getAttribute("aria-label") === label && b.offsetParent !== null,
+          // Match the accessible label, or the visible text when there's none.
+          (b) =>
+            (b.getAttribute("aria-label") ?? b.textContent?.trim()) === label &&
+            b.offsetParent !== null,
         );
         if (!button) throw new Error(`No visible button labeled ${label}`);
         button.click();
