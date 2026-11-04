@@ -85,6 +85,11 @@ export function App() {
       <main id="top">
         <section className="hero">
           <p className="eyebrow">Theme transitions for React</p>
+          <p className="byline">
+            <a href="https://alawonn.com">
+              an <span className="wordmark" role="img" aria-label="alawonn" /> project
+            </a>
+          </p>
           <h1>Change themes with a rising tide.</h1>
           <p className="lead">
             The new theme fills the page from the bottom edge, pauses partway up while the
