@@ -1,12 +1,16 @@
 # React Theme Tide
 
-Change your site's theme with a water fill that rises from the bottom of the screen. It stops at 60% for one second while the waves keep moving, then fills the rest of the screen.
+Switch your site between light and dark with a wave of water. The new theme rises from the bottom of the screen, pauses for a second with the waves still moving, then fills the page.
 
-What shows under the water is your real page in its new theme: text, backgrounds, borders and controls. It isn't a colored overlay. The reveal uses the browser's View Transitions API and a CSS mask, so it needs no screenshot library, no copy of your DOM and no React re-render on each frame.
+<p>
+  <a href="https://github.com/alawonn/react-theme-tide/blob/main/docs/images/tide-1-rise.png"><img src="https://raw.githubusercontent.com/alawonn/react-theme-tide/main/docs/images/tide-1-rise.png" width="260" alt="The dark theme rising from the bottom of the demo page"></a>
+  <a href="https://github.com/alawonn/react-theme-tide/blob/main/docs/images/tide-2-pause.png"><img src="https://raw.githubusercontent.com/alawonn/react-theme-tide/main/docs/images/tide-2-pause.png" width="260" alt="The water pausing at 60% of the screen"></a>
+  <a href="https://github.com/alawonn/react-theme-tide/blob/main/docs/images/tide-3-fill.png"><img src="https://raw.githubusercontent.com/alawonn/react-theme-tide/main/docs/images/tide-3-fill.png" width="260" alt="The water about to fill the page"></a>
+</p>
 
-React Theme Tide doesn't store your theme. You keep your own theme state and storage, and the library animates around the function that applies it.
+**[Try the demo](https://alawonn.github.io/react-theme-tide/)**
 
-> Status: first release (0.1). The API may still change before 1.0.
+You keep your own theme code. React Theme Tide only animates the change.
 
 ## Install
 
@@ -14,11 +18,27 @@ React Theme Tide doesn't store your theme. You keep your own theme state and sto
 npm install react-theme-tide
 ```
 
-React 18 or newer is a peer dependency. There's no stylesheet to import. While a tide runs, the library adds a small `<style>` element to `<head>` and removes it when the tide ends.
+```bash
+pnpm add react-theme-tide
+```
 
-## Quick start
+```bash
+yarn add react-theme-tide
+```
 
-Pass the function that changes your theme. It must update the DOM before it returns (or before its promise resolves), because the browser captures the new page right after it.
+```bash
+bun add react-theme-tide
+```
+
+```bash
+deno add npm:react-theme-tide
+```
+
+You need React 18 or newer. There's no CSS to import.
+
+## Use it
+
+Wrap the code that changes your theme in `run`:
 
 ```tsx
 "use client";
@@ -26,77 +46,10 @@ import { useThemeTide } from "react-theme-tide";
 
 export function ThemeToggle() {
   const tide = useThemeTide();
-  const toggle = () =>
-    tide.run(() => {
-      const dark = document.documentElement.classList.toggle("dark");
-      localStorage.setItem("theme", dark ? "dark" : "light");
-    });
-  return (
-    <button type="button" onClick={toggle} aria-label="Toggle theme">
-      Toggle theme
-    </button>
-  );
-}
-```
-
-Without React, call `themeTide` directly:
-
-```ts
-import { themeTide } from "react-theme-tide";
-
-themeTide(() => document.documentElement.classList.toggle("dark"));
-```
-
-## Wrap a theme setter you already have
-
-If your site already has a function that applies and saves the theme, pass it in unchanged:
-
-```tsx
-"use client";
-import { useThemeTide } from "react-theme-tide";
-import { setAppearance } from "@/lib/appearance"; // your existing setter
-
-export function AppearanceButtons() {
-  const tide = useThemeTide();
-  return (
-    <>
-      <button type="button" onClick={() => tide.run(() => setAppearance("light"))}>Light</button>
-      <button type="button" onClick={() => tide.run(() => setAppearance("dark"))}>Dark</button>
-    </>
-  );
-}
-```
-
-Your storage key, your pre-paint script and your other controls keep working as before. Every control can use its own `useThemeTide()`; they all see the same `running` state.
-
-### Theme held in React state
-
-React state updates are asynchronous, so wrap them in `flushSync`. That way the DOM has the new theme when the callback returns:
-
-```tsx
-import { flushSync } from "react-dom";
-
-tide.run(() => flushSync(() => setTheme("dark")));
-```
-
-This applies to theme libraries that keep state in React context, too.
-
-## Next.js App Router
-
-Use the hook in a Client Component (a file that starts with `"use client"`). Only the hook's module is marked `"use client"`. The rest of the package doesn't touch `window` or `document` when it's imported, so Server Components can import the defaults and helpers. On the server, `supportsThemeTide()` returns `false`.
-
-```tsx
-// app/theme-toggle.tsx
-"use client";
-import { useThemeTide } from "react-theme-tide";
-
-export function ThemeToggle() {
-  const { run, running } = useThemeTide();
   return (
     <button
       type="button"
-      disabled={running}
-      onClick={() => run(() => document.documentElement.classList.toggle("dark"))}
+      onClick={() => tide.run(() => document.documentElement.classList.toggle("dark"))}
     >
       Switch theme
     </button>
@@ -104,95 +57,29 @@ export function ThemeToggle() {
 }
 ```
 
+Already have a function that sets and saves the theme? Pass it in as it is:
+
 ```tsx
-// app/layout.tsx (a Server Component)
-import { ThemeToggle } from "./theme-toggle";
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <body>
-        <ThemeToggle />
-        {children}
-      </body>
-    </html>
-  );
-}
+tide.run(() => setTheme("dark"));
 ```
 
-Apply the saved theme before paint the way you do now, for example with an inline script in `<head>`. The tide only runs when someone changes the theme, never on first load or during hydration.
+If your theme lives in React state, wrap the update in `flushSync` so the page changes before the water starts:
 
-## Options
+```tsx
+import { flushSync } from "react-dom";
 
-All options are optional. Pass them to `useThemeTide(options)`, to `run(commit, options)` (which overrides the hook's options) or to `themeTide(commit, options)`.
-
-| Option | Default | Range | What it does |
-| --- | --- | --- | --- |
-| `riseDuration` | `900` | 0 to 10000 ms | Time to rise from the bottom edge to the hold level. |
-| `holdDuration` | `1000` | 0 to 10000 ms | Time the water stays at the hold level. The waves keep moving. |
-| `finishDuration` | `700` | 0 to 10000 ms | Time to rise from the hold level past the top edge. |
-| `holdLevel` | `0.6` | 0 to 1 | How full the screen is during the hold. `0.6` puts the mean waterline 40% down from the top. |
-| `waveAmplitude` | `12` | 0 to 80 px | Height of a crest above the mean waterline. `0` gives a flat line. |
-| `waveLength` | `240` | 40 to 4000 px | Distance between crests. |
-| `waveSpeed` | `1` | 0 to 5 | Crests that pass a fixed point each second. |
-| `respectReducedMotion` | `true` | boolean | Change the theme instantly when the user's system asks for reduced motion. |
-| `nonce` | none | string | Nonce for the temporary `<style>` element, for pages with a Content Security Policy. |
-
-A value outside its range, or of the wrong type, makes the call reject with a `RangeError` or `TypeError`. The theme still changes, instantly, so a bad option never breaks the toggle. To check options ahead of time, call `resolveThemeTideOptions(options)`, which throws the same errors.
-
-## How it behaves
-
-- **Coordinates.** The water is measured against the visible screen, not the document. It always starts at the bottom edge of the screen, however long the page is or however far it's scrolled. Scroll position and focus stay as they were.
-- **Both directions.** Light to dark and dark to light both fill upward.
-- **Completion.** At the end, the troughs pass above the top edge and the fill reaches past both sides, so none of the old theme is left showing.
-- **Your commit runs once.** Every call runs your function exactly once, whether the tide animates, falls back, finishes early or fails.
-- **Another change during a tide.** The running tide jumps to its end, then the new theme applies instantly. Changes always apply in the order they were made.
-- **Scrolling during a tide.** The water rushes to the top in about 0.2 s, with the waves still moving, and the page ends up where you scrolled. The old theme is a still snapshot, so it can't scroll along with the page.
-- **Resizing during a tide.** The tide ends right away, because the snapshot no longer fits the window.
-- **Input.** Keyboard input reaches the focused control during a tide. A mouse or touch press makes the water rush to the top, the same as scrolling. In Firefox the press also reaches the control under it. In Chromium it doesn't, because the browser sends pointer events to the root element during any View Transition, so the next press works as usual.
-- **Instant fallback.** The theme changes with no animation when the browser lacks View Transitions or CSS masks, when reduced motion applies, when the tab is hidden, when every duration is `0`, or when another View Transition is already running (in browsers that report `document.activeViewTransition`).
-- **Errors.** If your function throws or rejects, the returned promise rejects with that error. The animation and its temporary style are removed either way.
-- **Unmounting.** Unmounting a component that started a tide doesn't stop the tide. Nothing stays behind once it ends.
-
-The returned promise resolves to `{ animated: true }`, or to `{ animated: false, reason }`, where `reason` is one of `"reduced-motion"`, `"unsupported"`, `"hidden"`, `"zero-duration"`, `"busy"` or `"interrupted"`.
-
-## API
-
-```ts
-themeTide(commit: () => void | Promise<void>, options?: ThemeTideOptions): Promise<ThemeTideResult>
-useThemeTide(options?: ThemeTideOptions): { run, running, skip }
-skipThemeTide(): void              // jump a running tide to its end
-isThemeTideRunning(): boolean
-subscribeThemeTide(listener: () => void): () => void
-supportsThemeTide(): boolean       // false on the server
-resolveThemeTideOptions(options?): ResolvedThemeTideOptions
-themeTideDefaults, themeTideRanges
+tide.run(() => flushSync(() => setTheme("dark")));
 ```
 
-## Working with other View Transitions
+It works in Next.js too. Use the hook in a Client Component.
 
-The tide animates the page's root snapshot (`::view-transition-new(root)`). If your page gives other elements their own `view-transition-name`, those elements cross-fade on their own during a tide and aren't covered by the water. Starting another View Transition while a tide runs ends the tide early; the theme still changes.
+People who prefer reduced motion get an instant change. So do browsers without View Transitions.
 
-## Browser support
+## More
 
-The animation needs `document.startViewTransition`, `Element.animate` and CSS `mask-image`. Other browsers get the instant fallback.
-
-Tested so far, through Playwright automation on Linux:
-
-- **Chromium 156:** animation checked frame by frame from screenshots, at 1280 × 800 and in Pixel 7 emulation (412 × 839, device pixel ratio 2.625).
-- **Firefox 157:** animation timing and mask geometry checked through computed styles, at 1280 × 800 and 390 × 844. Firefox screenshots taken through Playwright don't include the transition layer, so frames haven't been checked by eye in automation yet.
-- **Safari and WebKit:** not tested yet.
-
-Known limitation: on screens with a fractional device pixel ratio, Chromium sometimes leaves the top-right corner device pixel in the old theme during the last frames.
-
-## Demo
-
-```bash
-npm install
-npm run demo
-```
-
-Then open http://localhost:5179. The demo has light and dark controls, sliders for every option, long scrolling content and fixed elements.
+- [Usage and options](https://github.com/alawonn/react-theme-tide/blob/main/docs/usage.md): timing, waves, the API and Next.js setup.
+- [How it works](https://github.com/alawonn/react-theme-tide/blob/main/docs/how-it-works.md): what happens on screen, edge cases and tested browsers.
+- [Contributing](https://github.com/alawonn/react-theme-tide/blob/main/CONTRIBUTING.md)
 
 ## License
 

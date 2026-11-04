@@ -16,7 +16,8 @@ npx playwright install chromium firefox
 - `src/`: the published library. See `src/README.md`.
 - `test/`: unit tests (Vitest, jsdom).
 - `e2e/`: browser tests (Playwright) against the fixture page. See `e2e/README.md`.
-- `demo/`: the demo site and the test fixture. It isn't published.
+- `demo/`: the demo site and the test fixture. Neither is in the npm package. Every push to `main` publishes the demo to https://alawonn.github.io/react-theme-tide/ (see `.github/workflows/pages.yml`).
+- `docs/`: the usage and how-it-works guides linked from the README.
 
 ## Checks
 

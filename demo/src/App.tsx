@@ -164,12 +164,18 @@ export function App() {
               the screen, wherever you are on the page, and your scroll position stays put.
             </p>
             <p>
-              If you scroll or resize the window during a change, the tide finishes right away so
-              you never look at a frozen picture of the page.
+              Scroll while the water is moving and it hurries to the top, so the page is ready
+              where you land.
             </p>
           </section>
         ))}
       </main>
+
+      <footer className="foot">
+        <a href="https://github.com/alawonn/react-theme-tide">GitHub</a>
+        <a href="https://www.npmjs.com/package/react-theme-tide">npm</a>
+        <span>MIT license</span>
+      </footer>
 
       <aside className="badge" aria-live="polite">
         {theme === "dark" ? "Dark" : "Light"} theme{tide.running ? ", changing" : ""}
