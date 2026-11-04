@@ -17,10 +17,10 @@ export default defineConfig({
     outDir: here("../demo-dist"),
     emptyOutDir: true,
     rollupOptions: {
-      input: {
-        demo: here("index.html"),
-        fixture: here("fixture/index.html"),
-      },
+      // The GitHub Pages build ships only the demo, not the test fixture.
+      input: process.env.TIDE_PAGES
+        ? { demo: here("index.html") }
+        : { demo: here("index.html"), fixture: here("fixture/index.html") },
     },
   },
 });
