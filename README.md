@@ -2,6 +2,12 @@
 
 Switch your site between light and dark with a wave of water. The new theme rises from the bottom of the screen, pauses for a second with the waves still moving, then fills the page.
 
+<p>
+  <a href="https://github.com/alawonn/react-theme-tide/blob/main/docs/images/tide-1-rise.png"><img src="https://raw.githubusercontent.com/alawonn/react-theme-tide/main/docs/images/tide-1-rise.png" width="260" alt="The dark theme rising from the bottom of the demo page"></a>
+  <a href="https://github.com/alawonn/react-theme-tide/blob/main/docs/images/tide-2-pause.png"><img src="https://raw.githubusercontent.com/alawonn/react-theme-tide/main/docs/images/tide-2-pause.png" width="260" alt="The water pausing at 60% of the screen"></a>
+  <a href="https://github.com/alawonn/react-theme-tide/blob/main/docs/images/tide-3-fill.png"><img src="https://raw.githubusercontent.com/alawonn/react-theme-tide/main/docs/images/tide-3-fill.png" width="260" alt="The water about to fill the page"></a>
+</p>
+
 **[Try the demo](https://alawonn.github.io/react-theme-tide/)**
 
 You keep your own theme code. React Theme Tide only animates the change.
