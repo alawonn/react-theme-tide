@@ -75,6 +75,13 @@ It works in Next.js too. Use the hook in a Client Component.
 
 People who prefer reduced motion get an instant change. So do browsers without View Transitions.
 
+## Sites using it
+
+- [Vertexx](https://vertexx.fit)
+- [meau.me](https://meau.me)
+
+Using it on your site? [Open an issue](https://github.com/alawonn/react-theme-tide/issues/new?title=Add%20my%20site%20to%20the%20README&body=Site%20name%3A%0ASite%20URL%3A%0A) with the name and link, or send a pull request that adds it to this list.
+
 ## More
 
 - [Usage and options](https://github.com/alawonn/react-theme-tide/blob/main/docs/usage.md): timing, waves, the API and Next.js setup.
