@@ -77,10 +77,13 @@ People who prefer reduced motion get an instant change. So do browsers without V
 
 ## Sites using it
 
-- [Vertexx](https://vertexx.fit)
-- [meau.me](https://meau.me)
+| Mid-tide | Site |
+| --- | --- |
+| <a href="https://vertexx.fit"><img src="https://raw.githubusercontent.com/alawonn/react-theme-tide/main/docs/images/site-vertexx.png" width="320" alt="Vertexx switching from dark to light, paused partway up"></a> | [Vertexx](https://vertexx.fit) |
+| <a href="https://meau.me"><img src="https://raw.githubusercontent.com/alawonn/react-theme-tide/main/docs/images/site-meau-me.png" width="320" alt="meau.me switching from light to dark, with long, slow waves"></a> | [meau.me](https://meau.me) |
+| <a href="https://alawonn.com"><img src="https://raw.githubusercontent.com/alawonn/react-theme-tide/main/docs/images/site-alawonn.png" width="320" alt="alawonn.com switching from light to dark, with short, quick waves"></a> | [alawonn.com](https://alawonn.com) |
 
-Using it on your site? [Open an issue](https://github.com/alawonn/react-theme-tide/issues/new?title=Add%20my%20site%20to%20the%20README&body=Site%20name%3A%0ASite%20URL%3A%0A) with the name and link, or send a pull request that adds it to this list.
+Using it on your site? [Open an issue](https://github.com/alawonn/react-theme-tide/issues/new?title=Add%20my%20site%20to%20the%20README&body=Site%20name%3A%0ASite%20URL%3A%0A) with the name and link, or send a pull request that adds it to this table.
 
 ## More
 
