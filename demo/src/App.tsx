@@ -86,7 +86,7 @@ export function App() {
         <section className="hero">
           <p className="eyebrow">Theme transitions for React</p>
           <p className="byline">
-            <a href="https://alawonn.com">
+            <a href="https://alawonn.com/oss">
               an{" "}
               <span className="wordmark" role="img" aria-label="alawonn">
                 <span aria-hidden="true">alawonn</span>
