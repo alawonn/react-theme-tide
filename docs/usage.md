@@ -42,6 +42,25 @@ tide.run(() => flushSync(() => setTheme("dark")));
 
 The same goes for theme libraries that keep the theme in React context.
 
+## Going back mid-tide
+
+Add `data-theme-tide-reverse` to the button that would switch back, and pressing it during a tide makes the water drain instead of finishing:
+
+```tsx
+<button
+  type="button"
+  aria-pressed={selected}
+  data-theme-tide-reverse={selected ? undefined : ""}
+  onClick={() => tide.run(() => setAppearance(value))}
+>
+  {label}
+</button>
+```
+
+With a Light and a Dark button, put it on whichever one isn't selected. With a single toggle button, leave it on all the time.
+
+Once the water is gone, the tide clicks your button for you, so your own click handler changes the theme. That handler has to call `run` or `themeTide` as usual. If the button is disabled, the press finishes the tide instead of reversing it, so don't disable it with `running` if you want this.
+
 ## Next.js App Router
 
 Use the hook in a file that starts with `"use client"`:
@@ -111,5 +130,6 @@ The promise resolves to `{ animated: true }` when the whole tide played. Otherwi
 - `"zero-duration"`: every duration is `0`.
 - `"busy"`: another page transition was running.
 - `"interrupted"`: the tide ended early, after a scroll, a click, a resize or another theme change.
+- `"reversed"`: the water drained because someone pressed a button marked with `data-theme-tide-reverse`. Both the original call and the one from that button resolve to this.
 
 If your function throws, the promise rejects with that error.
