@@ -14,6 +14,7 @@ const defaults: Settings = {
   riseDuration: themeTideDefaults.riseDuration,
   holdDuration: themeTideDefaults.holdDuration,
   finishDuration: themeTideDefaults.finishDuration,
+  reverseDuration: themeTideDefaults.reverseDuration,
   holdLevel: themeTideDefaults.holdLevel,
   waveAmplitude: themeTideDefaults.waveAmplitude,
   waveLength: themeTideDefaults.waveLength,
@@ -25,6 +26,7 @@ const sliders: { key: keyof typeof themeTideRanges; label: string; unit: string;
   { key: "riseDuration", label: "Rise", unit: "ms", step: 50 },
   { key: "holdDuration", label: "Hold", unit: "ms", step: 50 },
   { key: "finishDuration", label: "Finish", unit: "ms", step: 50 },
+  { key: "reverseDuration", label: "Going back", unit: "ms", step: 50 },
   { key: "holdLevel", label: "Hold level", unit: "%", step: 0.05 },
   { key: "waveAmplitude", label: "Wave height", unit: "px", step: 1 },
   { key: "waveLength", label: "Wavelength", unit: "px", step: 10 },
@@ -111,6 +113,7 @@ export function App() {
             </button>
           </div>
           <p className="status" role="status">{describe(result)}</p>
+          <p className="status">Changed your mind? Press the other theme while the water's moving and it drains back down.</p>
         </section>
 
         <section className="panel" aria-labelledby="settings-title">
