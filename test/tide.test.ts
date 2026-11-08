@@ -190,6 +190,105 @@ describe("themeTide", () => {
     expect(fake.transitions[0]?.skipped).toBe(true);
   });
 
+  describe("reversing", () => {
+    function marked() {
+      const button = document.createElement("button");
+      button.setAttribute("data-theme-tide-reverse", "");
+      button.getBoundingClientRect = () =>
+        ({ left: 10, right: 50, top: 10, bottom: 50, width: 40, height: 40 }) as DOMRect;
+      document.body.appendChild(button);
+      return button;
+    }
+    const press = (x: number, y: number) =>
+      window.dispatchEvent(new MouseEvent("pointerdown", { clientX: x, clientY: y, button: 0 }));
+    const drainOf = (fake: ReturnType<typeof installFakeViewTransitions>) =>
+      fake.animations.find((a) => a.options.duration === 200);
+
+    afterEach(() => {
+      document.body.replaceChildren();
+    });
+
+    it("drains, then lets the control change the theme under cover", async () => {
+      const fake = installFakeViewTransitions();
+      const order: string[] = [];
+      const button = marked();
+      let second: Promise<unknown> | undefined;
+      button.addEventListener("click", () => {
+        second = themeTide(() => void order.push("back"));
+      });
+      const first = themeTide(() => void order.push("forward"));
+      await flush();
+
+      press(20, 20);
+      const hold = fake.animations.find((a) => a.options.duration === 60000);
+      expect(drainOf(fake)).toBeDefined();
+      expect(hold?.playState).toBe("running");
+      await flush();
+      expect(order).toEqual(["forward"]);
+
+      drainOf(fake)?.complete();
+      await flush();
+      expect(order).toEqual(["forward", "back"]);
+      expect(hold?.playState).toBe("idle");
+
+      fake.transitions[0]?.finish();
+      const reversed = { animated: false, reason: "reversed" };
+      await expect(first).resolves.toEqual(reversed);
+      await expect(second).resolves.toEqual(reversed);
+      expect(leftovers()).toEqual(clean);
+    });
+
+    it("rushes when the press misses the marked control", async () => {
+      const fake = installFakeViewTransitions();
+      marked();
+      const done = themeTide(vi.fn());
+      await flush();
+      press(200, 200);
+      expect(fake.animations.some((a) => a.options.duration === 60000)).toBe(false);
+      fake.transitions[0]?.finish();
+      await expect(done).resolves.toEqual({ animated: false, reason: "interrupted" });
+    });
+
+    it("ignores a disabled control", async () => {
+      const fake = installFakeViewTransitions();
+      marked().disabled = true;
+      const done = themeTide(vi.fn());
+      await flush();
+      press(20, 20);
+      expect(fake.animations.some((a) => a.options.duration === 60000)).toBe(false);
+      fake.transitions[0]?.finish();
+      await done;
+    });
+
+    it("lets go if the control's handler never changes the theme", async () => {
+      const fake = installFakeViewTransitions();
+      marked();
+      const done = themeTide(vi.fn());
+      await flush();
+      press(20, 20);
+      drainOf(fake)?.complete();
+      await new Promise((resolve) => setTimeout(resolve, 80));
+      expect(fake.animations.find((a) => a.options.duration === 60000)?.playState).toBe("idle");
+      fake.transitions[0]?.finish();
+      await expect(done).resolves.toEqual({ animated: false, reason: "reversed" });
+      expect(leftovers()).toEqual(clean);
+    });
+
+    it("still changes the theme back if the transition is skipped mid-drain", async () => {
+      const fake = installFakeViewTransitions();
+      const button = marked();
+      const back = vi.fn();
+      button.addEventListener("click", () => void themeTide(back));
+      const done = themeTide(vi.fn());
+      await flush();
+      press(20, 20);
+      fake.transitions[0]?.finish();
+      await expect(done).resolves.toEqual({ animated: false, reason: "reversed" });
+      expect(back).toHaveBeenCalledTimes(1);
+      expect(leftovers()).toEqual(clean);
+    });
+  });
+
   it("leaves another page transition alone", async () => {
     const fake = installFakeViewTransitions();
     Object.defineProperty(document, "activeViewTransition", {

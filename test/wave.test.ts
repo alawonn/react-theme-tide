@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolveThemeTideOptions, themeTideDefaults } from "../src/options.js";
-import { maskKeyframes, rushKeyframes, waterlineAt, wavePhaseAt } from "../src/wave.js";
+import { drainKeyframes, maskKeyframes, rushKeyframes, waterlineAt, wavePhaseAt } from "../src/wave.js";
 
 const options = resolveThemeTideOptions();
 const height = 800;
@@ -110,5 +110,20 @@ describe("rush keyframes", () => {
 
   it("keeps the waves at their normal speed", () => {
     expect(frames.at(-1)!.x - frames[0]!.x).toBeCloseTo(240 * 0.2, 1);
+  });
+});
+
+describe("drain keyframes", () => {
+  const frames = drainKeyframes(options, { width: 1200, height }, 1400, 200).map(positions);
+
+  it("starts where the water is and ends below the bottom edge", () => {
+    expect(frames[0]!.y).toBeCloseTo(waterlineAt(1400, options, height) - 14, 1);
+    expect(frames.at(-1)!.y).toBeGreaterThanOrEqual(height);
+  });
+
+  it("only ever falls", () => {
+    for (let i = 1; i < frames.length; i++) {
+      expect(frames[i]!.y).toBeGreaterThanOrEqual(frames[i - 1]!.y);
+    }
   });
 });
