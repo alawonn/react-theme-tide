@@ -38,6 +38,8 @@ const reverseAttribute = "data-theme-tide-reverse";
 const reversalHoldLimit = 60000;
 /** Time for a click handler that calls themeTide after an async step. */
 const reversalGrace = 50;
+/** Longest a reversal stays covered waiting for the page's own color fades. */
+const pageFadeLimit = 400;
 
 interface Reversal {
   /** Resolves once the water has left the screen. */
@@ -170,6 +172,29 @@ function snapshotSize(fallback: Viewport): Viewport {
   const width = parseFloat(style.width);
   const height = parseFloat(style.height);
   return width > 0 && height > 0 ? { width, height } : fallback;
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Waits for CSS transitions the theme change started on the real page. Without
+ * this, elements with color transitions visibly fade once the cover comes off.
+ */
+async function pageFades(): Promise<void> {
+  if (typeof CSSTransition === "undefined") return;
+  // Lets framework updates from the host's commit reach the DOM first.
+  await delay(0);
+  const fades = document
+    .getAnimations()
+    .filter(
+      (animation) =>
+        animation instanceof CSSTransition &&
+        !(animation.effect as KeyframeEffect | null)?.pseudoElement,
+    )
+    .map((animation) => animation.finished.catch(() => undefined));
+  await Promise.race([Promise.all(fades), delay(pageFadeLimit)]);
 }
 
 function isUsableControl(element: Element): element is HTMLElement {
@@ -308,10 +333,9 @@ async function animate(
       ]);
       markDrained();
       control.click();
-      if (reversal.accepted.length === 0) {
-        await new Promise((resolve) => setTimeout(resolve, reversalGrace));
-      }
+      if (reversal.accepted.length === 0) await delay(reversalGrace);
       await Promise.all(reversal.accepted);
+      await pageFades();
       hold.cancel();
     })();
     return true;

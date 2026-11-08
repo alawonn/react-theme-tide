@@ -350,6 +350,29 @@ test.describe("reversing", () => {
     expect(await leftovers(page)).toEqual(clean);
   });
 
+  test("the page's own color fades finish before the cover comes off", async ({ page }) => {
+    await open(page);
+    await page.evaluate(() => {
+      const text = document.createElement("p");
+      text.textContent = "Fades";
+      text.style.transition = "color 150ms";
+      document.querySelector("main")!.append(text);
+      const seen = window as unknown as { fadesAtUncover?: number };
+      new MutationObserver(() => {
+        if (document.documentElement.hasAttribute("data-theme-tide")) return;
+        seen.fadesAtUncover = document
+          .getAnimations()
+          .filter((a) => a instanceof CSSTransition && a.playState === "running").length;
+      }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme-tide"] });
+    });
+    await startPaused(page);
+    await seek(page, rise + 500);
+    const { x, y } = await center(page);
+    await page.mouse.click(x, y);
+    expect(await tideResult(page)).toEqual(reversed);
+    expect(await page.evaluate(() => (window as unknown as { fadesAtUncover?: number }).fadesAtUncover)).toBe(0);
+  });
+
   test("the drain takes about 0.2 s in real time", async ({ page }) => {
     await open(page);
     const { x, y } = await center(page);
