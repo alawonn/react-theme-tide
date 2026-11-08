@@ -14,6 +14,8 @@ export interface FakeAnimation {
   keyframes: Keyframe[];
   options: KeyframeAnimationOptions;
   playState: AnimationPlayState;
+  finished: Promise<unknown>;
+  complete: () => void;
   cancel: () => void;
 }
 
@@ -26,10 +28,17 @@ export function installFakeViewTransitions() {
     keyframes: Keyframe[],
     options: KeyframeAnimationOptions,
   ) {
+    let settle!: () => void;
+    const finished = new Promise<void>((resolve) => (settle = resolve));
     const animation: FakeAnimation = {
       keyframes,
       options,
       playState: "running",
+      finished,
+      complete() {
+        animation.playState = "finished";
+        settle();
+      },
       cancel() {
         animation.playState = "idle";
       },
