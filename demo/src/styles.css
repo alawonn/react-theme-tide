@@ -80,10 +80,10 @@ main { max-width: 960px; margin: 0 auto; padding: 32px 16px 24px; }
 .byline a { color: inherit; text-decoration: none; }
 .byline a:hover { color: var(--text); }
 /* The Alawonn wordmark: the word typed in the Alawonn font, from a 4 KB
-   subset of alawonn-font@1.0.0 with only a, l, w, o and n. The box keeps the
+   subset of alawonn-font@2.0.1 with only a, l, w, o and n. The box keeps the
    visible word's proportions (4155 x 692) and is 1em tall. Measured from the
-   font, in em: the ink starts 0.036 in and is 5.534 wide on the baseline, and
-   the ascent is 1.17, so the text is 6.0043 / 5.534 = 1.085em and the line
+   font, in em: the ink starts 0.036 in and is 5.531 wide on the baseline, and
+   the ascent is 1.17, so the text is 6.0043 / 5.531 = 1.0856em and the line
    is lifted until the baseline meets the bottom of the box. */
 @font-face {
   font-family: "Alawonn Wordmark";
@@ -101,9 +101,9 @@ main { max-width: 960px; margin: 0 auto; padding: 32px 16px 24px; }
 .wordmark > span {
   position: absolute;
   left: -0.036em;
-  top: -0.2483em;
+  top: -0.2488em;
   font-family: "Alawonn Wordmark";
-  font-size: 1.085em;
+  font-size: 1.0856em;
   line-height: 1.47;
   white-space: nowrap;
   color: #25272a;
