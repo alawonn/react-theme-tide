@@ -46,6 +46,7 @@ function describe(result: ThemeTideResult | string | null) {
     "zero-duration": "Changed instantly because every duration is 0.",
     busy: "Changed instantly because another page transition was running.",
     interrupted: "Finished early.",
+    reversed: "Went back to the theme you were on.",
   } as const;
   return reasons[result.reason];
 }
@@ -74,6 +75,7 @@ export function App() {
               key={value}
               type="button"
               aria-pressed={theme === value}
+              data-theme-tide-reverse={theme === value ? undefined : ""}
               onClick={() => choose(value)}
             >
               {value === "light" ? "Light" : "Dark"}
@@ -101,7 +103,7 @@ export function App() {
             page in its new theme: text, borders and controls included.
           </p>
           <div className="actions">
-            <button type="button" className="primary" onClick={flip}>
+            <button type="button" className="primary" data-theme-tide-reverse="" onClick={flip}>
               Switch to {theme === "dark" ? "light" : "dark"}
             </button>
             <button type="button" className="quiet" onClick={tide.skip} disabled={!tide.running}>
