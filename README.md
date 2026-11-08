@@ -73,6 +73,8 @@ tide.run(() => flushSync(() => setTheme("dark")));
 
 It works in Next.js too. Use the hook in a Client Component.
 
+Changed your mind mid-tide? Add `data-theme-tide-reverse` to the button that switches back, and pressing it drains the water. [Here's how](https://github.com/alawonn/react-theme-tide/blob/main/docs/usage.md#going-back-mid-tide).
+
 People who prefer reduced motion get an instant change. So do browsers without View Transitions.
 
 ## Sites using it
