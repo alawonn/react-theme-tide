@@ -6,6 +6,7 @@ import {
 } from "./options.js";
 import {
   maskDeclarations,
+  drainKeyframes,
   maskKeyframes,
   rushKeyframes,
   type Viewport,
@@ -20,7 +21,8 @@ export type ThemeTideInstantReason =
   | "hidden"
   | "zero-duration"
   | "busy"
-  | "interrupted";
+  | "interrupted"
+  | "reversed";
 
 export type ThemeTideResult =
   | { animated: true }
@@ -28,11 +30,25 @@ export type ThemeTideResult =
 
 const attribute = "data-theme-tide";
 const pseudo = "::view-transition-new(root)";
-/** How long the water takes to reach the top after a scroll or pointer press. */
+/** How long the water takes to reach the top, or drain, after a press. */
 const rushDuration = 200;
+/** Marks a control that takes the page back to the theme it's leaving. */
+const reverseAttribute = "data-theme-tide-reverse";
+/** Upper limit on how long a drained tide waits for the host's theme change. */
+const reversalHoldLimit = 60000;
+/** Time for a click handler that calls themeTide after an async step. */
+const reversalGrace = 50;
+
+interface Reversal {
+  /** Resolves once the water has left the screen. */
+  drained: Promise<void>;
+  /** Theme changes the host made during the reversal. */
+  accepted: Promise<unknown>[];
+}
 
 interface Active {
   transition: ViewTransition;
+  reversal?: Reversal;
 }
 
 let active: Active | null = null;
@@ -121,6 +137,13 @@ export function themeTide(
     return run().then(() => Promise.reject(error));
   }
   if (!supportsThemeTide()) return instant(run, "unsupported");
+  if (active?.reversal) {
+    // What's under the water is live, so the theme has to wait until the
+    // water is gone or the wave would vanish mid-drain.
+    const done = active.reversal.drained.then(run);
+    active.reversal.accepted.push(done.catch(() => undefined));
+    return done.then(() => ({ animated: false, reason: "reversed" }));
+  }
   if (active) {
     // A second change during a tide finishes the first one, then applies
     // the new theme without animation once the first commit has run.
@@ -147,6 +170,52 @@ function snapshotSize(fallback: Viewport): Viewport {
   const width = parseFloat(style.width);
   const height = parseFloat(style.height);
   return width > 0 && height > 0 ? { width, height } : fallback;
+}
+
+function isUsableControl(element: Element): element is HTMLElement {
+  return element instanceof HTMLElement && !element.matches(":disabled");
+}
+
+/**
+ * Finds a marked control under the pointer. Chromium hit-tests to the root
+ * element during a transition, so this compares against the live layout.
+ */
+function reverseControlAt(x: number, y: number): HTMLElement | null {
+  for (const element of document.querySelectorAll(`[${reverseAttribute}]`)) {
+    const box = element.getBoundingClientRect();
+    if (
+      isUsableControl(element) &&
+      box.width > 0 &&
+      box.height > 0 &&
+      x >= box.left &&
+      x <= box.right &&
+      y >= box.top &&
+      y <= box.bottom
+    ) {
+      return element;
+    }
+  }
+  return null;
+}
+
+/** Drops the click that follows a press, since the tide clicks the control itself. */
+function swallowNextClick() {
+  const stop = () => {
+    window.removeEventListener("click", eat, { capture: true });
+    window.removeEventListener("pointerdown", stop, { capture: true });
+    window.removeEventListener("pointercancel", stop, { capture: true });
+    window.removeEventListener("keydown", stop, { capture: true });
+  };
+  const eat = (event: MouseEvent) => {
+    if (!event.isTrusted) return;
+    event.stopPropagation();
+    event.preventDefault();
+    stop();
+  };
+  window.addEventListener("click", eat, { capture: true });
+  window.addEventListener("pointerdown", stop, { capture: true });
+  window.addEventListener("pointercancel", stop, { capture: true });
+  window.addEventListener("keydown", stop, { capture: true });
 }
 
 function rules(options: ResolvedThemeTideOptions, viewport: Viewport): string {
@@ -177,7 +246,8 @@ async function animate(
     root.removeAttribute(attribute);
     return instant(run, "unsupported");
   }
-  setActive({ transition });
+  const current: Active = { transition };
+  setActive(current);
 
   let animation: Animation | undefined;
   let viewport = viewportSize();
@@ -205,6 +275,64 @@ async function animate(
     animation = next;
   };
 
+  // A press on a marked control drains the water, then clicks that control so
+  // the host's own handler changes the theme while the old page covers it.
+  let reversalDone: Promise<void> | undefined;
+  const reverse = (control: HTMLElement): boolean => {
+    if (interrupted || !animation) return false;
+    interrupted = true;
+    const from = Number(animation.currentTime ?? 0);
+    // Keeps the transition open after the drain until the theme has changed.
+    const hold = root.animate(
+      { opacity: [1, 1] },
+      { duration: reversalHoldLimit, pseudoElement: pseudo },
+    );
+    const drain = root.animate(drainKeyframes(options, viewport, from, rushDuration), {
+      duration: rushDuration,
+      easing: "linear",
+      fill: "forwards",
+      pseudoElement: pseudo,
+    });
+    animation.cancel();
+    animation = drain;
+    let markDrained!: () => void;
+    const reversal: Reversal = {
+      drained: new Promise<void>((resolve) => (markDrained = resolve)),
+      accepted: [],
+    };
+    current.reversal = reversal;
+    reversalDone = (async () => {
+      await Promise.race([
+        drain.finished.catch(() => undefined),
+        transition.finished.catch(() => undefined),
+      ]);
+      markDrained();
+      control.click();
+      if (reversal.accepted.length === 0) {
+        await new Promise((resolve) => setTimeout(resolve, reversalGrace));
+      }
+      await Promise.all(reversal.accepted);
+      hold.cancel();
+    })();
+    return true;
+  };
+
+  const press = (event: PointerEvent) => {
+    const control =
+      event.button === 0 ? reverseControlAt(event.clientX, event.clientY) : null;
+    if (control && reverse(control)) swallowNextClick();
+    else rush();
+  };
+
+  // Keyboard presses do reach the control, as a click with no pointer detail.
+  const keyboardClick = (event: MouseEvent) => {
+    if (!event.isTrusted || event.detail !== 0) return;
+    const control = (event.target as Element).closest?.(`[${reverseAttribute}]`);
+    if (!control || !isUsableControl(control) || !reverse(control)) return;
+    event.stopPropagation();
+    event.preventDefault();
+  };
+
   const ready = transition.ready.then(
     () => {
       viewport = snapshotSize(viewport);
@@ -215,7 +343,8 @@ async function animate(
         pseudoElement: pseudo,
       });
       window.addEventListener("scroll", rush, { passive: true });
-      window.addEventListener("pointerdown", rush, { capture: true });
+      window.addEventListener("pointerdown", press, { capture: true });
+      window.addEventListener("click", keyboardClick, { capture: true });
       // A resize changes the snapshot's size, so end the tide right away.
       window.addEventListener("resize", interrupt);
     },
@@ -230,13 +359,15 @@ async function animate(
   }
   await ready;
   await transition.finished.catch(() => undefined);
+  await reversalDone;
   // A skipped transition still calls its update callback; `run` keeps this
   // safe if a browser ever doesn't.
   if (!failure) await run().catch((error: unknown) => (failure = { error }));
 
   const completed = !interrupted && animation?.playState === "finished";
   window.removeEventListener("scroll", rush);
-  window.removeEventListener("pointerdown", rush, { capture: true });
+  window.removeEventListener("pointerdown", press, { capture: true });
+  window.removeEventListener("click", keyboardClick, { capture: true });
   window.removeEventListener("resize", interrupt);
   animation?.cancel();
   style.remove();
@@ -244,5 +375,6 @@ async function animate(
   setActive(null);
 
   if (failure) throw failure.error;
+  if (reversalDone) return { animated: false, reason: "reversed" };
   return completed ? { animated: true } : { animated: false, reason: "interrupted" };
 }

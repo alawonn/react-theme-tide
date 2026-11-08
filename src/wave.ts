@@ -156,8 +156,29 @@ export function rushKeyframes(
   from: number,
   duration: number,
 ): Keyframe[] {
-  const start = waterlineAt(from, options, viewport.height);
   const end = waterlineAt(totalDuration(options), options, viewport.height);
+  return travelKeyframes(options, viewport, from, duration, end);
+}
+
+/** Like rushKeyframes, but the water falls back below the bottom edge. */
+export function drainKeyframes(
+  options: ResolvedThemeTideOptions,
+  viewport: Viewport,
+  from: number,
+  duration: number,
+): Keyframe[] {
+  const end = waterlineAt(0, options, viewport.height);
+  return travelKeyframes(options, viewport, from, duration, end);
+}
+
+function travelKeyframes(
+  options: ResolvedThemeTideOptions,
+  viewport: Viewport,
+  from: number,
+  duration: number,
+  end: number,
+): Keyframe[] {
+  const start = waterlineAt(from, options, viewport.height);
   const steps = Math.max(1, Math.ceil((duration / 1000) * sampleRate));
   return Array.from({ length: steps + 1 }, (_, i) => {
     const t = i / steps;
