@@ -26,7 +26,8 @@ At the end, the waves go past the top and both sides, so none of the old theme i
 - **Clicks or taps:** same as scrolling. In Firefox the click also reaches whatever is under it. Chrome and other Chromium browsers send clicks to the page root during any View Transition, so the click only speeds up the water. The next click works as usual.
 - **Types:** keys reach the focused control as normal.
 - **Resizes the window:** the tide ends right away, because the picture no longer fits.
-- **Changes the theme again:** the current tide jumps to its end, then the new theme applies instantly. Changes always apply in the order they were made.
+- **Presses the button for the theme they just left:** the water drains back down, in 0.2 s unless you set `reverseDuration`, then the page is back on that theme. This needs the `data-theme-tide-reverse` attribute on that button ([see usage](usage.md#going-back-mid-tide)). It works with a click, a tap or the keyboard.
+- **Changes the theme some other way:** the current tide jumps to its end, then the new theme applies instantly. Changes always apply in the order they were made.
 
 If the component that started a tide unmounts, the tide keeps going. Nothing is left behind once it ends.
 

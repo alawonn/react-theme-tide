@@ -14,6 +14,7 @@ const defaults: Settings = {
   riseDuration: themeTideDefaults.riseDuration,
   holdDuration: themeTideDefaults.holdDuration,
   finishDuration: themeTideDefaults.finishDuration,
+  reverseDuration: themeTideDefaults.reverseDuration,
   holdLevel: themeTideDefaults.holdLevel,
   waveAmplitude: themeTideDefaults.waveAmplitude,
   waveLength: themeTideDefaults.waveLength,
@@ -25,6 +26,7 @@ const sliders: { key: keyof typeof themeTideRanges; label: string; unit: string;
   { key: "riseDuration", label: "Rise", unit: "ms", step: 50 },
   { key: "holdDuration", label: "Hold", unit: "ms", step: 50 },
   { key: "finishDuration", label: "Finish", unit: "ms", step: 50 },
+  { key: "reverseDuration", label: "Going back", unit: "ms", step: 50 },
   { key: "holdLevel", label: "Hold level", unit: "%", step: 0.05 },
   { key: "waveAmplitude", label: "Wave height", unit: "px", step: 1 },
   { key: "waveLength", label: "Wavelength", unit: "px", step: 10 },
@@ -46,6 +48,7 @@ function describe(result: ThemeTideResult | string | null) {
     "zero-duration": "Changed instantly because every duration is 0.",
     busy: "Changed instantly because another page transition was running.",
     interrupted: "Finished early.",
+    reversed: "Went back to the theme you were on.",
   } as const;
   return reasons[result.reason];
 }
@@ -74,6 +77,7 @@ export function App() {
               key={value}
               type="button"
               aria-pressed={theme === value}
+              data-theme-tide-reverse={theme === value ? undefined : ""}
               onClick={() => choose(value)}
             >
               {value === "light" ? "Light" : "Dark"}
@@ -101,7 +105,7 @@ export function App() {
             page in its new theme: text, borders and controls included.
           </p>
           <div className="actions">
-            <button type="button" className="primary" onClick={flip}>
+            <button type="button" className="primary" data-theme-tide-reverse="" onClick={flip}>
               Switch to {theme === "dark" ? "light" : "dark"}
             </button>
             <button type="button" className="quiet" onClick={tide.skip} disabled={!tide.running}>
@@ -109,6 +113,7 @@ export function App() {
             </button>
           </div>
           <p className="status" role="status">{describe(result)}</p>
+          <p className="status">Changed your mind? Press the other theme while the water's moving and it drains back down.</p>
         </section>
 
         <section className="panel" aria-labelledby="settings-title">
