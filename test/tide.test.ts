@@ -238,6 +238,17 @@ describe("themeTide", () => {
       expect(leftovers()).toEqual(clean);
     });
 
+    it("uses reverseDuration for the drain", async () => {
+      const fake = installFakeViewTransitions();
+      marked();
+      const done = themeTide(vi.fn(), { reverseDuration: 650 });
+      await flush();
+      press(20, 20);
+      expect(fake.animations.some((a) => a.options.duration === 650)).toBe(true);
+      fake.transitions[0]?.finish();
+      await done;
+    });
+
     it("rushes when the press misses the marked control", async () => {
       const fake = installFakeViewTransitions();
       marked();

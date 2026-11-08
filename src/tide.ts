@@ -30,7 +30,7 @@ export type ThemeTideResult =
 
 const attribute = "data-theme-tide";
 const pseudo = "::view-transition-new(root)";
-/** How long the water takes to reach the top, or drain, after a press. */
+/** How long the water takes to reach the top after a scroll or pointer press. */
 const rushDuration = 200;
 /** Marks a control that takes the page back to the theme it's leaving. */
 const reverseAttribute = "data-theme-tide-reverse";
@@ -312,8 +312,8 @@ async function animate(
       { opacity: [1, 1] },
       { duration: reversalHoldLimit, pseudoElement: pseudo },
     );
-    const drain = root.animate(drainKeyframes(options, viewport, from, rushDuration), {
-      duration: rushDuration,
+    const drain = root.animate(drainKeyframes(options, viewport, from, options.reverseDuration), {
+      duration: options.reverseDuration,
       easing: "linear",
       fill: "forwards",
       pseudoElement: pseudo,

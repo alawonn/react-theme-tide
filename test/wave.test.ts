@@ -18,6 +18,7 @@ describe("options", () => {
       riseDuration: 900,
       holdDuration: 1000,
       finishDuration: 700,
+      reverseDuration: 200,
       holdLevel: 0.6,
       waveAmplitude: 12,
       waveSpeed: 1,
@@ -26,6 +27,7 @@ describe("options", () => {
 
   it("rejects values outside their range", () => {
     expect(() => resolveThemeTideOptions({ holdDuration: -1 })).toThrow(RangeError);
+    expect(() => resolveThemeTideOptions({ reverseDuration: 10001 })).toThrow(RangeError);
     expect(() => resolveThemeTideOptions({ waveAmplitude: 81 })).toThrow(RangeError);
     expect(() => resolveThemeTideOptions({ waveSpeed: Number.NaN })).toThrow(TypeError);
     expect(() =>
