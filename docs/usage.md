@@ -42,6 +42,27 @@ tide.run(() => flushSync(() => setTheme("dark")));
 
 The same goes for theme libraries that keep the theme in React context.
 
+## Going back mid-tide
+
+Add `data-theme-tide-reverse` to the button that would switch back, and pressing it during a tide makes the water drain instead of finishing:
+
+```tsx
+<button
+  type="button"
+  aria-pressed={selected}
+  data-theme-tide-reverse={selected ? undefined : ""}
+  onClick={() => tide.run(() => setAppearance(value))}
+>
+  {label}
+</button>
+```
+
+With a Light and a Dark button, put it on whichever one isn't selected. With a single toggle button, leave it on all the time.
+
+The water takes 0.2 s to drain. Change that with the `reverseDuration` option.
+
+Once the water is gone, the tide clicks your button for you, so your own click handler changes the theme. That handler has to call `run` or `themeTide` as usual. If the button is disabled, the press finishes the tide instead of reversing it, so don't disable it with `running` if you want this.
+
 ## Next.js App Router
 
 Use the hook in a file that starts with `"use client"`:
@@ -80,6 +101,7 @@ Every option is optional. Pass them to `useThemeTide(options)`, to `run(commit, 
 | `riseDuration` | `900` | 0 to 10000 ms | Time to rise from the bottom to the pause. |
 | `holdDuration` | `1000` | 0 to 10000 ms | How long the water pauses. The waves keep moving. |
 | `finishDuration` | `700` | 0 to 10000 ms | Time to rise from the pause past the top. |
+| `reverseDuration` | `200` | 0 to 10000 ms | Time for the water to drain when someone goes back mid-tide. |
 | `holdLevel` | `0.6` | 0 to 1 | How full the screen is during the pause. |
 | `waveAmplitude` | `12` | 0 to 80 px | How tall the waves are. `0` gives a flat line. |
 | `waveLength` | `240` | 40 to 4000 px | Distance from one crest to the next. |
@@ -111,5 +133,6 @@ The promise resolves to `{ animated: true }` when the whole tide played. Otherwi
 - `"zero-duration"`: every duration is `0`.
 - `"busy"`: another page transition was running.
 - `"interrupted"`: the tide ended early, after a scroll, a click, a resize or another theme change.
+- `"reversed"`: the water drained because someone pressed a button marked with `data-theme-tide-reverse`. Both the original call and the one from that button resolve to this.
 
 If your function throws, the promise rejects with that error.

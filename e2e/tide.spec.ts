@@ -269,6 +269,170 @@ test("scrolling during a tide rushes the water to the top", async ({ page, brows
   expect(await leftovers(page)).toEqual(clean);
 });
 
+test.describe("reversing", () => {
+  const reversed = { animated: false, reason: "reversed" };
+  const tideResult = (page: Page) =>
+    page.evaluate(() => (window as unknown as { tidePromise: Promise<unknown> }).tidePromise);
+  const center = async (page: Page) => {
+    const box = (await page.locator("#reverse-target").boundingBox())!;
+    return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  };
+  // Records whether the page was still covered each time the theme changed.
+  const watchTheme = (page: Page) =>
+    page.evaluate(() => {
+      const log: { className: string; covered: boolean }[] = [];
+      (window as unknown as { themeLog: typeof log }).themeLog = log;
+      new MutationObserver(() =>
+        log.push({
+          className: document.documentElement.className,
+          covered: document.documentElement.hasAttribute("data-theme-tide"),
+        }),
+      ).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    });
+  const themeLog = (page: Page) =>
+    page.evaluate(() => (window as unknown as { themeLog: unknown[] }).themeLog);
+
+  test("a press on the marked control drains and restores the theme", async ({ page }) => {
+    await open(page);
+    await watchTheme(page);
+    await startPaused(page);
+    await seek(page, rise + 500);
+    const { x, y } = await center(page);
+    await page.mouse.click(x, y);
+    expect(await tideResult(page)).toEqual(reversed);
+    expect(await page.evaluate(() => window.reverseResult)).toEqual(reversed);
+    expect(await page.evaluate(() => [window.commits, window.reverseClicks])).toEqual([2, 1]);
+    expect(await page.evaluate(() => document.documentElement.className)).toBe("");
+    expect(await themeLog(page)).toEqual([
+      { className: "dark", covered: true },
+      { className: "", covered: true },
+    ]);
+    expect(await leftovers(page)).toEqual(clean);
+  });
+
+  test("the water falls with the new theme still applied", async ({ page, browserName }) => {
+    await open(page);
+    const height = page.viewportSize()!.height;
+    const level = height * 0.4;
+    await startPaused(page);
+    await seek(page, rise + 500);
+    const { x, y } = await center(page);
+    await page.evaluate(
+      async ([x, y, pseudo]) => {
+        window.dispatchEvent(new PointerEvent("pointerdown", { clientX: x, clientY: y, button: 0 }));
+        const drain = document
+          .getAnimations()
+          .find((a) => (a.effect as KeyframeEffect | null)?.getTiming().duration === 200)!;
+        if ((drain.effect as KeyframeEffect).pseudoElement !== pseudo) throw new Error("wrong target");
+        drain.pause();
+        drain.currentTime = 100;
+        await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
+      },
+      [x, y, "::view-transition-new(root)"] as const,
+    );
+    const { waterline } = await computedWaterline(page);
+    expect(waterline).toBeGreaterThan(level + 20);
+    expect(waterline).toBeLessThan(height);
+    expect(await page.evaluate(() => document.documentElement.className)).toBe("dark");
+    if (pixels(browserName)) {
+      const b = await pixelBoundary(page, isDark, waveColumns(page.viewportSize()!.width));
+      expect(Math.abs(b.mean - waterline)).toBeLessThan(3);
+    }
+    await page.evaluate(() => {
+      document
+        .getAnimations()
+        .find((a) => (a.effect as KeyframeEffect | null)?.getTiming().duration === 200)!
+        .finish();
+    });
+    expect(await tideResult(page)).toEqual(reversed);
+    expect(await page.evaluate(() => document.documentElement.className)).toBe("");
+    expect(await leftovers(page)).toEqual(clean);
+  });
+
+  test("the page's own color fades finish before the cover comes off", async ({ page }) => {
+    await open(page);
+    await page.evaluate(() => {
+      const text = document.createElement("p");
+      text.textContent = "Fades";
+      text.style.transition = "color 150ms";
+      document.querySelector("main")!.append(text);
+      const seen = window as unknown as { fadesAtUncover?: number };
+      new MutationObserver(() => {
+        if (document.documentElement.hasAttribute("data-theme-tide")) return;
+        seen.fadesAtUncover = document
+          .getAnimations()
+          .filter((a) => a instanceof CSSTransition && a.playState === "running").length;
+      }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme-tide"] });
+    });
+    await startPaused(page);
+    await seek(page, rise + 500);
+    const { x, y } = await center(page);
+    await page.mouse.click(x, y);
+    expect(await tideResult(page)).toEqual(reversed);
+    expect(await page.evaluate(() => (window as unknown as { fadesAtUncover?: number }).fadesAtUncover)).toBe(0);
+  });
+
+  test("the drain takes about 0.2 s in real time", async ({ page }) => {
+    await open(page);
+    const { x, y } = await center(page);
+    const run = await page.evaluate(
+      async ([x, y]) => {
+        const done = window.toggleTheme();
+        await new Promise((r) => setTimeout(r, 1300));
+        const start = performance.now();
+        window.dispatchEvent(new PointerEvent("pointerdown", { clientX: x, clientY: y, button: 0 }));
+        return { result: await done, elapsed: performance.now() - start, className: document.documentElement.className };
+      },
+      [x, y] as const,
+    );
+    expect(run.result).toEqual(reversed);
+    expect(run.elapsed).toBeGreaterThan(150);
+    expect(run.elapsed).toBeLessThan(500);
+    expect(run.className).toBe("");
+    expect(await leftovers(page)).toEqual(clean);
+  });
+
+  test("keyboard activation reverses too", async ({ page }) => {
+    await open(page);
+    await page.focus("#reverse-target");
+    await startPaused(page);
+    await seek(page, rise + 500);
+    await page.keyboard.press("Enter");
+    expect(await tideResult(page)).toEqual(reversed);
+    expect(await page.evaluate(() => [window.commits, window.reverseClicks])).toEqual([2, 1]);
+    expect(await page.evaluate(() => document.activeElement?.id)).toBe("reverse-target");
+    expect(await leftovers(page)).toEqual(clean);
+  });
+
+  test("a press held past the drain doesn't click twice", async ({ page }) => {
+    await open(page);
+    await startPaused(page);
+    await seek(page, rise + 500);
+    const { x, y } = await center(page);
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    expect(await tideResult(page)).toEqual(reversed);
+    await page.waitForTimeout(100);
+    await page.mouse.up();
+    await page.waitForTimeout(100);
+    expect(await page.evaluate(() => [window.commits, window.reverseClicks])).toEqual([2, 1]);
+    expect(await page.evaluate(() => document.documentElement.className)).toBe("");
+  });
+
+  test("the next click after a reversal works normally", async ({ page }) => {
+    await open(page);
+    await startPaused(page);
+    await seek(page, rise + 500);
+    const { x, y } = await center(page);
+    await page.mouse.click(x, y);
+    await tideResult(page);
+    await page.waitForTimeout(100);
+    await page.mouse.click(30, 20);
+    expect(await page.evaluate(() => window.clicks)).toBe(1);
+  });
+});
+
 test("changes instantly under reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await open(page);

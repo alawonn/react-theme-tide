@@ -5,6 +5,8 @@ export interface ThemeTideOptions {
   holdDuration?: number;
   /** Time for the water to rise from the hold level past the top edge, in ms. */
   finishDuration?: number;
+  /** Time for the water to drain when someone goes back mid-tide, in ms. */
+  reverseDuration?: number;
   /** How full the viewport is during the hold, from 0 (empty) to 1 (full). */
   holdLevel?: number;
   /** Height of a wave crest above the mean waterline, in CSS pixels. */
@@ -23,6 +25,7 @@ export interface ResolvedThemeTideOptions {
   riseDuration: number;
   holdDuration: number;
   finishDuration: number;
+  reverseDuration: number;
   holdLevel: number;
   waveAmplitude: number;
   waveLength: number;
@@ -41,6 +44,7 @@ export const themeTideDefaults: Readonly<ResolvedThemeTideOptions> =
     riseDuration: 900,
     holdDuration: 1000,
     finishDuration: 700,
+    reverseDuration: 200,
     holdLevel: 0.6,
     waveAmplitude: 12,
     waveLength: 240,
@@ -55,6 +59,7 @@ export const themeTideRanges: Readonly<
   riseDuration: [0, 10000],
   holdDuration: [0, 10000],
   finishDuration: [0, 10000],
+  reverseDuration: [0, 10000],
   holdLevel: [0, 1],
   waveAmplitude: [0, 80],
   waveLength: [40, 4000],

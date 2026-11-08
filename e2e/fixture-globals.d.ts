@@ -7,5 +7,7 @@ declare global {
     failTheme: () => Promise<unknown>;
     commits: number;
     clicks: number;
+    reverseClicks: number;
+    reverseResult?: Promise<ThemeTideResult>;
   }
 }
