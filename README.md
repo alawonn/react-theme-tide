@@ -77,6 +77,30 @@ Changed your mind mid-tide? Add `data-theme-tide-reverse` to the button that swi
 
 People who prefer reduced motion get an instant change. So do browsers without View Transitions.
 
+## React Native and Expo
+
+It works in apps too. You need two more libraries:
+
+```bash
+npx expo install react-theme-tide @shopify/react-native-skia react-native-reanimated react-native-worklets
+```
+
+Wrap your app once, near the top:
+
+```tsx
+import { ThemeTideRoot } from "react-theme-tide";
+
+export default function App() {
+  return (
+    <ThemeTideRoot>
+      <Screens />
+    </ThemeTideRoot>
+  );
+}
+```
+
+Then use `useThemeTide` the same way as on the web. It runs in Expo Go. So far it's been tested on Android, and iOS isn't tested yet. [More on React Native](https://github.com/alawonn/react-theme-tide/blob/main/docs/usage.md#react-native-and-expo).
+
 ## Sites using it
 
 | Mid-tide | Site |
