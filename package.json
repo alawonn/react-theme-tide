@@ -1,6 +1,6 @@
 {
   "name": "react-theme-tide",
-  "version": "0.4.0-alpha.3",
+  "version": "0.4.0",
   "description": "Theme changes that rise up the screen like water, on the web and in React Native.",
   "license": "MIT",
   "type": "module",
