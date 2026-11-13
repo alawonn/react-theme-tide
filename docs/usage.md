@@ -92,6 +92,55 @@ Keep applying the saved theme before paint the way you do now. The tide only run
 
 Only the hook is a client module. Server code can import the rest, such as `themeTideDefaults`. On the server, `supportsThemeTide()` returns `false` and `themeTide` changes the theme with no animation.
 
+## React Native and Expo
+
+Install the package with Skia and Reanimated. In an Expo app:
+
+```bash
+npx expo install react-theme-tide @shopify/react-native-skia react-native-reanimated react-native-worklets
+```
+
+Both libraries are already in Expo Go, so you don't need a development build. Outside Expo, follow each library's own install steps. React Native picks the app version of React Theme Tide by itself, so the import is the same as on the web.
+
+Wrap your app in `ThemeTideRoot` once. The water covers everything inside it.
+
+```tsx
+import { ThemeTideRoot } from "react-theme-tide";
+
+export default function App() {
+  return (
+    <ThemeTideRoot>
+      <Screens />
+    </ThemeTideRoot>
+  );
+}
+```
+
+Then change the theme inside `run`, like on the web:
+
+```tsx
+const tide = useThemeTide();
+<Pressable onPress={() => tide.run(() => setTheme("dark"))} />
+```
+
+You don't need `flushSync` here. The tide gives React a couple of frames to draw the new theme before the water moves.
+
+To let people go back mid-tide, wrap the button that would switch back in `ThemeTideReverse`. Turn it off with `disabled` while that button is selected:
+
+```tsx
+<ThemeTideReverse disabled={selected}>
+  <Pressable onPress={() => tide.run(() => setTheme(value))}>
+    <Text>{label}</Text>
+  </Pressable>
+</ThemeTideReverse>
+```
+
+The button's own `onPress` changes the theme, after the water has drained. If the press doesn't end up changing the theme, for example because the finger slid off, the water rises the rest of the way instead.
+
+Sizes in the options are in points instead of CSS pixels, and `nonce` does nothing in an app.
+
+Sharing code between an app and Expo web? Both components work on the web too. There, `ThemeTideRoot` renders its children unchanged, and `ThemeTideReverse` adds `data-theme-tide-reverse` to its one child. Expo web itself isn't tested yet.
+
 ## Options
 
 Every option is optional. Pass them to `useThemeTide(options)`, to `run(commit, options)` for a single change, or to `themeTide(commit, options)`.
@@ -123,13 +172,15 @@ supportsThemeTide(): boolean   // false on the server
 resolveThemeTideOptions(options?): ResolvedThemeTideOptions
 themeTideDefaults
 themeTideRanges
+ThemeTideRoot                  // React Native: wrap your app in it
+ThemeTideReverse               // the button that goes back mid-tide
 ```
 
 The promise resolves to `{ animated: true }` when the whole tide played. Otherwise it resolves to `{ animated: false, reason }`. `reason` is one of:
 
 - `"reduced-motion"`: the user prefers reduced motion.
-- `"unsupported"`: the browser can't run it, or the code ran on the server.
-- `"hidden"`: the tab was in the background.
+- `"unsupported"`: the browser can't run it, or the code ran on the server. In an app: there's no `ThemeTideRoot`, or the picture of the screen couldn't be taken.
+- `"hidden"`: the tab or the app was in the background.
 - `"zero-duration"`: every duration is `0`.
 - `"busy"`: another page transition was running.
 - `"interrupted"`: the tide ended early, after a scroll, a click, a resize or another theme change.
