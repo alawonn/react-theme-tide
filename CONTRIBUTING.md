@@ -17,6 +17,7 @@ npx playwright install chromium firefox
 - `test/`: unit tests (Vitest, jsdom).
 - `e2e/`: browser tests (Playwright) against the fixture page. See `e2e/README.md`.
 - `demo/`: the demo site and the test fixture. Neither is in the npm package. Every push to `main` publishes the demo to https://alawonn.github.io/react-theme-tide/ (see `.github/workflows/pages.yml`, which can also be run by hand from the Actions tab).
+- `native-demo/`: an Expo app for trying the React Native version. Not in the npm package. See `native-demo/README.md`.
 - `docs/`: the usage and how-it-works guides linked from the README.
 
 ## Checks
@@ -34,6 +35,8 @@ npm run build && npm pack --dry-run       # what the package would contain
 WebKit tests need extra system libraries. Install them with `sudo npx playwright install-deps webkit`, then run with `TIDE_WEBKIT=1`.
 
 To save frames, a video and frame timing from the demo page, run `TIDE_EVIDENCE=1 npx playwright test e2e/evidence.spec.ts e2e/perf.spec.ts --project=chromium`. Output goes to `test-results/`.
+
+For the React Native version, run the engine tests with `npx vitest run test/native-engine.test.ts`, then try it in the demo app on a device (see `native-demo/README.md`).
 
 ## Guidelines
 

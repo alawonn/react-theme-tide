@@ -4,7 +4,7 @@ When you change the theme, the browser takes a picture of the page as it is. You
 
 What you see under the water is your real page in the new theme. Text, borders and buttons all change as the water passes them.
 
-This uses the browser's View Transitions API and a CSS mask. There's no copy of your page, no screenshot library and no React re-render on every frame. A small `<style>` tag is added while the water moves and removed when it's done.
+On the web, this uses the browser's View Transitions API and a CSS mask. There's no copy of your page, no screenshot library and no React re-render on every frame. A small `<style>` tag is added while the water moves and removed when it's done.
 
 ## The timing
 
@@ -45,15 +45,19 @@ There's no animation when:
 
 The water covers the page's root snapshot. If some elements on your page have their own `view-transition-name`, they fade on their own during a tide instead of sitting under the water. Starting another View Transition during a tide ends the tide early. The theme still changes.
 
-## Tested browsers
+## In React Native
 
-The animation needs `document.startViewTransition`, `Element.animate` and CSS `mask-image`. Other browsers get the instant change.
+Apps don't have View Transitions, so the tide works the other way around. It takes a picture of everything inside `ThemeTideRoot` with Skia and lays it on top. Your function changes the theme underneath, and the picture is cut away below a wavy line that rises up the screen. It looks the same as on the web, and what's under the water is your real app in the new theme.
 
-Tested so far with Playwright on Linux:
+The cut-out is drawn on the UI thread with Reanimated, so a busy JavaScript thread doesn't slow the water down.
 
-- **Chromium 156:** checked frame by frame from screenshots, on a 1280 × 800 desktop and in Pixel 7 emulation.
-- **Firefox 157:** timing and water level checked through computed styles, at 1280 × 800 and 390 × 844. Playwright's Firefox screenshots leave out the transition layer, so automated frame checks aren't possible there yet.
-- **Safari:** not tested yet.
+Mid-tide it behaves like the web, with one difference: touches reach your app. A tap or a scroll makes the water rush to the top, and the tap still lands on whatever is under the finger. Pressing a button inside `ThemeTideReverse` drains the water instead. Rotating the device or sending the app to the background ends the tide at once.
+
+The picture only covers `ThemeTideRoot`. The status bar, the navigation bar and anything in its own window, such as a React Native `Modal`, switch to the new theme straight away. Video, maps and camera previews might come out blank in the picture.
+
+## What it needs
+
+On the web, the animation needs `document.startViewTransition`, `Element.animate` and CSS `mask-image`. Other browsers get the instant change. In apps, it needs Skia and Reanimated.
 
 ## Known issue
 
