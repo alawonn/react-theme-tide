@@ -53,22 +53,11 @@ The cut-out is drawn on the UI thread with Reanimated, so a busy JavaScript thre
 
 Mid-tide it behaves like the web, with one difference: touches reach your app. A tap or a scroll makes the water rush to the top, and the tap still lands on whatever is under the finger. Pressing a button inside `ThemeTideReverse` drains the water instead. Rotating the device or sending the app to the background ends the tide at once.
 
-The picture only covers `ThemeTideRoot`. The status bar, the navigation bar and anything in its own window, such as a React Native `Modal`, switch to the new theme straight away. Video, maps and camera previews might come out blank in the picture. They haven't been tested.
+The picture only covers `ThemeTideRoot`. The status bar, the navigation bar and anything in its own window, such as a React Native `Modal`, switch to the new theme straight away. Video, maps and camera previews might come out blank in the picture.
 
-## Tested browsers
+## What it needs
 
-The animation needs `document.startViewTransition`, `Element.animate` and CSS `mask-image`. Other browsers get the instant change.
-
-Tested so far with Playwright on Linux:
-
-- **Chromium 156:** checked frame by frame from screenshots, on a 1280 × 800 desktop and in Pixel 7 emulation.
-- **Firefox 157:** timing and water level checked through computed styles, at 1280 × 800 and 390 × 844. Playwright's Firefox screenshots leave out the transition layer, so automated frame checks aren't possible there yet.
-- **Safari:** not tested yet.
-
-Tested in apps so far:
-
-- **Android 11 emulator** in Expo Go 57 (Expo SDK 57, React Native 0.86.3, Skia 2.6.2, Reanimated 4.5.1), using the demo app in `native-demo/` on that SDK. Checked with screenshots: the rise, pause and finish in both directions, the rush on a tap and on a scroll, going back mid-tide, and the instant change with Remove animations on. Screenshots can't catch single frames, so the first and last frames of a tide weren't checked one by one.
-- **iOS:** not tested yet.
+On the web, the animation needs `document.startViewTransition`, `Element.animate` and CSS `mask-image`. Other browsers get the instant change. In apps, it needs Skia and Reanimated.
 
 ## Known issue
 

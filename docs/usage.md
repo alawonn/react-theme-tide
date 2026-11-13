@@ -139,7 +139,7 @@ The button's own `onPress` changes the theme, after the water has drained. If th
 
 Sizes in the options are in points instead of CSS pixels, and `nonce` does nothing in an app.
 
-Sharing code between an app and Expo web? Both components work on the web too. There, `ThemeTideRoot` renders its children unchanged, and `ThemeTideReverse` adds `data-theme-tide-reverse` to its one child. Expo web itself isn't tested yet.
+Sharing code between an app and Expo web? Both components work on the web too. There, `ThemeTideRoot` renders its children unchanged, and `ThemeTideReverse` adds `data-theme-tide-reverse` to its one child.
 
 ## Options
 

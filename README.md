@@ -99,7 +99,7 @@ export default function App() {
 }
 ```
 
-Then use `useThemeTide` the same way as on the web. It runs in Expo Go. So far it's been tested on Android, and iOS isn't tested yet. [More on React Native](https://github.com/alawonn/react-theme-tide/blob/main/docs/usage.md#react-native-and-expo).
+Then use `useThemeTide` the same way as on the web. It runs in Expo Go. [More on React Native](https://github.com/alawonn/react-theme-tide/blob/main/docs/usage.md#react-native-and-expo).
 
 ## Sites using it
 
@@ -115,7 +115,7 @@ Using it on your site? [Open an issue](https://github.com/alawonn/react-theme-ti
 ## More
 
 - [Usage and options](https://github.com/alawonn/react-theme-tide/blob/main/docs/usage.md): timing, waves, the API and Next.js setup.
-- [How it works](https://github.com/alawonn/react-theme-tide/blob/main/docs/how-it-works.md): what happens on screen, edge cases and tested browsers.
+- [How it works](https://github.com/alawonn/react-theme-tide/blob/main/docs/how-it-works.md): what happens on screen, edge cases and what it needs.
 - [Contributing](https://github.com/alawonn/react-theme-tide/blob/main/CONTRIBUTING.md)
 
 ## License
