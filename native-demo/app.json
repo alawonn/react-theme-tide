@@ -1,0 +1,9 @@
+{
+  "expo": {
+    "name": "Theme Tide",
+    "slug": "react-theme-tide-demo",
+    "version": "1.0.0",
+    "orientation": "default",
+    "userInterfaceStyle": "automatic"
+  }
+}
