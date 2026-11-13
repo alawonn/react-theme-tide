@@ -1,7 +1,7 @@
 {
   "name": "react-theme-tide",
-  "version": "0.3.0",
-  "description": "Theme changes that rise up the page like water, using native View Transitions.",
+  "version": "0.4.0-alpha.3",
+  "description": "Theme changes that rise up the screen like water, on the web and in React Native.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -18,10 +18,20 @@
     "theme",
     "dark-mode",
     "view-transitions",
-    "animation"
+    "animation",
+    "react-native",
+    "expo"
   ],
   "exports": {
     ".": {
+      "browser": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "react-native": {
+        "types": "./dist/native/index.d.ts",
+        "default": "./dist/native/index.js"
+      },
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
@@ -29,9 +39,12 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "react-native": "./dist/native/index.js",
   "files": [
     "dist/*.js",
-    "dist/*.d.ts"
+    "dist/*.d.ts",
+    "dist/native/*.js",
+    "dist/native/*.d.ts"
   ],
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.build.json",
@@ -44,11 +57,15 @@
     "prepack": "npm run build"
   },
   "peerDependencies": {
-    "react": ">=18"
+    "react": ">=18",
+    "react-native": ">=0.79.0",
+    "@shopify/react-native-skia": ">=2.0.0",
+    "react-native-reanimated": ">=4.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.64.1",
+    "@shopify/react-native-skia": "^2.6.2",
     "@types/node": "^24.19.2",
     "@types/pngjs": "^6.0.5",
     "@types/react": "^19.3.0",
@@ -60,9 +77,23 @@
     "pngjs": "^7.0.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "react-native": "^0.86.3",
+    "react-native-reanimated": "^4.5.1",
+    "react-native-worklets": "^0.10.1",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.1",
     "vite": "^8.3.5",
     "vitest": "^5.1.0"
+  },
+  "peerDependenciesMeta": {
+    "react-native": {
+      "optional": true
+    },
+    "@shopify/react-native-skia": {
+      "optional": true
+    },
+    "react-native-reanimated": {
+      "optional": true
+    }
   }
 }

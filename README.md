@@ -77,6 +77,30 @@ Changed your mind mid-tide? Add `data-theme-tide-reverse` to the button that swi
 
 People who prefer reduced motion get an instant change. So do browsers without View Transitions.
 
+## React Native and Expo
+
+It works in apps too. You need two more libraries:
+
+```bash
+npx expo install react-theme-tide @shopify/react-native-skia react-native-reanimated react-native-worklets
+```
+
+Wrap your app once, near the top:
+
+```tsx
+import { ThemeTideRoot } from "react-theme-tide";
+
+export default function App() {
+  return (
+    <ThemeTideRoot>
+      <Screens />
+    </ThemeTideRoot>
+  );
+}
+```
+
+Then use `useThemeTide` the same way as on the web. It runs in Expo Go. [More on React Native](https://github.com/alawonn/react-theme-tide/blob/main/docs/usage.md#react-native-and-expo).
+
 ## Sites using it
 
 | Mid-tide | Site |
@@ -91,7 +115,7 @@ Using it on your site? [Open an issue](https://github.com/alawonn/react-theme-ti
 ## More
 
 - [Usage and options](https://github.com/alawonn/react-theme-tide/blob/main/docs/usage.md): timing, waves, the API and Next.js setup.
-- [How it works](https://github.com/alawonn/react-theme-tide/blob/main/docs/how-it-works.md): what happens on screen, edge cases and tested browsers.
+- [How it works](https://github.com/alawonn/react-theme-tide/blob/main/docs/how-it-works.md): what happens on screen, edge cases and what it needs.
 - [Contributing](https://github.com/alawonn/react-theme-tide/blob/main/CONTRIBUTING.md)
 
 ## License
