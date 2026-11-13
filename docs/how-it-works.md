@@ -67,7 +67,7 @@ Tested so far with Playwright on Linux:
 
 Tested in apps so far:
 
-- **Android 11 emulator** in Expo Go 57 (Expo SDK 57, React Native 0.86.3, Skia 2.6.2, Reanimated 4.5.1), using the demo app in `native-demo/`. Checked with screenshots: the rise, pause and finish in both directions, the rush on a tap and on a scroll, going back mid-tide, and the instant change with Remove animations on. Screenshots can't catch single frames, so the first and last frames of a tide weren't checked one by one.
+- **Android 11 emulator** in Expo Go 57 (Expo SDK 57, React Native 0.86.3, Skia 2.6.2, Reanimated 4.5.1), using the demo app in `native-demo/` on that SDK. Checked with screenshots: the rise, pause and finish in both directions, the rush on a tap and on a scroll, going back mid-tide, and the instant change with Remove animations on. Screenshots can't catch single frames, so the first and last frames of a tide weren't checked one by one.
 - **iOS:** not tested yet.
 
 ## Known issue

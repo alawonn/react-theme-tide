@@ -4,6 +4,11 @@
     "slug": "react-theme-tide-demo",
     "version": "1.0.0",
     "orientation": "default",
-    "userInterfaceStyle": "automatic"
+    "userInterfaceStyle": "automatic",
+    "plugins": [
+      "expo-asset",
+      "expo-font",
+      "expo-status-bar"
+    ]
   }
 }
